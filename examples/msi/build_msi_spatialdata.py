@@ -24,6 +24,8 @@ def build_msi_spatialdata(
     region_csv,
     x_flip=True,
     aligned_coords_csv=None,
+    feature=None,
+    cmap="viridis",
 ):
     """Load an MSI dataset, interactively align its grid onto its own H&E
     image, and package the result as a SpatialData object.
@@ -39,6 +41,15 @@ def build_msi_spatialdata(
         opposite to the image's, so this defaults to True.
     aligned_coords_csv : str or None
         If given, the aligned coordinates are also saved here.
+    feature : str or None
+        Which metabolite/lipid column to use as the alignment image. If None,
+        an interactive Prev/Next browser lets you pick the one with the
+        clearest contrast (see
+        :func:`spatialwarp.grid_align.pick_landmarks_multi_feature`); pass a
+        specific column name to skip the browser once you already know which
+        one works best.
+    cmap : str
+        Colormap for the feature-browsing picker's pseudo-image.
 
     Returns
     -------
@@ -57,8 +68,10 @@ def build_msi_spatialdata(
         image=image,
         points_xy=points_xy,
         values=feature_values,
+        feature=feature,
         output_csv=aligned_coords_csv,
         x_flip=x_flip,
+        cmap=cmap,
     )
     msi.update_coordinates(aligned_xy[:, 0], aligned_xy[:, 1])
 

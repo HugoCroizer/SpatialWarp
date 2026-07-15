@@ -2,7 +2,7 @@ from . import bunwarp, grid_align, landmark_picker, matching, qc, registration, 
 from .pipeline import align
 from .registration import register_elastic, RegistrationResult
 from .landmark_picker import pick_landmarks
-from .grid_align import run_grid_alignment, rasterize_points, points_to_pixel
+from .grid_align import run_grid_alignment, rasterize_points, points_to_pixel, pick_landmarks_multi_feature
 from .matching import match_nearest
 from .qc import plot_overlay
 
@@ -21,6 +21,7 @@ __all__ = [
     "run_grid_alignment",
     "rasterize_points",
     "points_to_pixel",
+    "pick_landmarks_multi_feature",
     "match_nearest",
     "plot_overlay",
 ]
