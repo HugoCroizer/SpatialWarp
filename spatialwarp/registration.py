@@ -4,7 +4,8 @@ Landmark-guided affine initialization followed by intensity-based B-spline
 elastic registration. Pure Python — no external tools (Fiji/BUnwarpJ) needed.
 """
 
-from dataclasses import dataclass
+import os
+from dataclasses import dataclass, field
 
 import numpy as np
 import SimpleITK as sitk
@@ -35,6 +36,10 @@ class RegistrationResult:
     affine_transform: sitk.Transform
     bspline_transform: sitk.Transform
     fixed_size: tuple
+    # Optional small rigid nudge (rotation + translation) applied *after* affine + bspline,
+    # e.g. fit by spatialwarp.refine.refine_alignment() from matched-feature correlation
+    # rather than from landmarks/image intensity. None for a plain registration.
+    correction: sitk.Transform = field(default=None)
 
     def warp_points_fixed_to_moving(self, x, y):
         """Map point coordinates from fixed-image pixel space into
@@ -46,6 +51,8 @@ class RegistrationResult:
         for i in range(len(x)):
             p = self.bspline_transform.TransformPoint((float(x[i]), float(y[i])))
             p = self.affine_transform.TransformPoint(p)
+            if self.correction is not None:
+                p = self.correction.TransformPoint(p)
             x_out[i], y_out[i] = p
         return x_out, y_out
 
@@ -53,6 +60,8 @@ class RegistrationResult:
         combined = sitk.CompositeTransform(2)
         combined.AddTransform(self.bspline_transform)
         combined.AddTransform(self.affine_transform)
+        if self.correction is not None:
+            combined.AddTransform(self.correction)
         return combined
 
     def warp_image(self, moving_image):
@@ -71,12 +80,16 @@ class RegistrationResult:
     def save(self, path):
         sitk.WriteTransform(self.affine_transform, str(path) + ".affine.tfm")
         sitk.WriteTransform(self.bspline_transform, str(path) + ".bspline.tfm")
+        if self.correction is not None:
+            sitk.WriteTransform(self.correction, str(path) + ".correction.tfm")
 
     @classmethod
     def load(cls, path, fixed_size):
         affine = sitk.ReadTransform(str(path) + ".affine.tfm")
         bspline = sitk.ReadTransform(str(path) + ".bspline.tfm")
-        return cls(affine_transform=affine, bspline_transform=bspline, fixed_size=fixed_size)
+        correction_path = str(path) + ".correction.tfm"
+        correction = sitk.ReadTransform(correction_path) if os.path.exists(correction_path) else None
+        return cls(affine_transform=affine, bspline_transform=bspline, fixed_size=fixed_size, correction=correction)
 
 
 def register_elastic(

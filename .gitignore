@@ -2,3 +2,21 @@ __pycache__/
 *.pyc
 *.egg-info/
 work_*/
+
+# Data & results -- this repo ships the spatialwarp package + example code, not the imaging/
+# sequencing data or the derived registration/landmark/matched-coordinate outputs those examples
+# produce when run. Whole raw-data dump directories (e.g. a Space Ranger / Visium HD `outs/`)
+# should also just never be added under here in the first place.
+*.csv
+*.tfm
+*.h5ad
+*.h5
+*.tif
+*.tiff
+*.ndpi
+*.parquet
+*.geojson
+*.png
+*.jpg
+*.jpeg
+DD1974/
